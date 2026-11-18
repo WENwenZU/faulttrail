@@ -1,0 +1,15 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "WENwenZU/faulttrail/examples/first_parent"
+
+// Values
+
+// Errors
+
+// Types and methods
+type Entry
+
+type Tally
+
+// Type aliases
+
+// Traits

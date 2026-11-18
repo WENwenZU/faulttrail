@@ -1,0 +1,9 @@
+# Build output and dependency cache are not part of the source tree.
+_build/
+.mooncakes/
+.moon-lock
+*.log
+_tmp_store_test/
+# Local investigations and interrupted writes are not release assets.
+*.session
+*.tmp.*

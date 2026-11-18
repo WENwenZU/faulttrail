@@ -1,0 +1,36 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "WENwenZU/faulttrail/version"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub(all) enum SeqError {
+  EmptySequence
+  LimitNotPositive(Int32)
+  TooLong(Int32, Int32)
+  BlankId(Int32)
+  IdHasControl(Int32, Int32)
+  IdNotAscii(Int32, Int32)
+  DuplicateId(Int32, Int32)
+} derive(Eq, @debug.Debug)
+pub fn SeqError::message(Self) -> String
+
+pub struct Sequence {
+  // private fields
+}
+pub fn Sequence::at(Self, Int32) -> String?
+pub fn Sequence::digest(Self) -> String
+pub fn Sequence::from_ids(Array[String], max_commits? : Int32) -> Result[Self, SeqError]
+pub fn Sequence::ids(Self) -> Array[String]
+pub fn Sequence::index_of(Self, String) -> Int32?
+pub fn Sequence::length(Self) -> Int32
+
+// Type aliases
+
+// Traits

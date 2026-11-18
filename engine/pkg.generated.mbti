@@ -1,0 +1,154 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "WENwenZU/faulttrail/engine"
+
+import {
+  "WENwenZU/faulttrail/version",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub const OBSERVATION_ID_BOUND : Int32 = 2147483647
+
+// Errors
+
+// Types and methods
+pub(all) struct Ambiguity {
+  span : Span
+  blocked : Array[BlockedNote]
+  why : String
+} derive(Eq, @debug.Debug)
+
+pub(all) struct BlockedNote {
+  index : Int32
+  commit_id : String
+  reason : String
+} derive(Eq, @debug.Debug)
+
+pub(all) struct BudgetReport {
+  kind : String
+  limit : Int32
+  detail : String
+} derive(Eq, @debug.Debug)
+
+pub(all) struct ConflictReport {
+  good : EvidenceRef
+  bad : EvidenceRef
+  why : String
+} derive(Eq, @debug.Debug)
+
+pub struct Engine {
+  // private fields
+}
+pub fn Engine::attempt_limit(Self) -> Int32
+pub fn Engine::candidate_span(Self) -> Span?
+pub fn Engine::is_active(Self, Int32) -> Bool
+pub fn Engine::limits(Self) -> Limits
+pub fn Engine::new(@version.Sequence, limits? : Limits, attempt_limit? : Int32) -> Result[Self, InvalidReport]
+pub fn Engine::observations(Self) -> Array[Observation]
+pub fn Engine::observe(Self, Int32, Probe, may_retry? : Bool, note? : String) -> Result[Observation, RecordError]
+pub fn Engine::observe_commit(Self, String, Probe, may_retry? : Bool, note? : String) -> Result[Observation, RecordError]
+pub fn Engine::outcome(Self) -> Outcome
+pub fn Engine::replay_observation(Self, Observation) -> Result[Unit, RecordError]
+pub fn Engine::retract(Self, Int32) -> Result[Unit, RetractError]
+pub fn Engine::sequence(Self) -> @version.Sequence
+
+pub(all) struct EvidenceRef {
+  obs_id : Int32
+  index : Int32
+  commit_id : String
+} derive(Eq, @debug.Debug)
+
+pub(all) struct InsufficientReport {
+  missing_good : Bool
+  missing_bad : Bool
+  why : String
+} derive(Eq, @debug.Debug)
+
+pub(all) struct InvalidReport {
+  code : String
+  detail : String
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Limits {
+  max_observations : Int32
+  max_steps : Int32
+} derive(Eq, @debug.Debug)
+pub fn Limits::default() -> Self
+pub fn Limits::new(Int32, Int32) -> Self
+pub fn Limits::validate(Self) -> Result[Unit, InvalidReport]
+
+pub(all) struct Located {
+  index : Int32
+  commit_id : String
+  why : String
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Observation {
+  id : Int32
+  index : Int32
+  probe : Probe
+  attempt : Int32
+  may_retry : Bool
+  note : String
+} derive(Eq, @debug.Debug)
+pub fn Observation::verdict(Self) -> Verdict
+
+pub(all) enum Outcome {
+  NeedObservation(Recommendation)
+  Located(Located)
+  Ambiguous(Ambiguity)
+  Conflict(ConflictReport)
+  Insufficient(InsufficientReport)
+  Budget(BudgetReport)
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Probe {
+  Passed
+  Failed
+  BuildFailed
+  TimedOut
+  Skipped
+  Undetermined
+} derive(Eq, @debug.Debug)
+pub fn Probe::verdict(Self) -> Verdict
+
+pub(all) struct Recommendation {
+  index : Int32
+  commit_id : String
+  span : Span
+  why : String
+} derive(Eq, @debug.Debug)
+
+pub(all) enum RecordError {
+  IndexOutOfRange(Int32, Int32)
+  UnknownCommit(String)
+  ObservationsExhausted(Int32)
+  NonCanonicalId(Int32, Int32)
+  NonCanonicalAttempt(Int32, Int32)
+  IdentifierSpaceExhausted(Int32)
+} derive(Eq, @debug.Debug)
+pub fn RecordError::message(Self) -> String
+
+pub(all) enum RetractError {
+  NoSuchObservation(Int32)
+  AlreadyRetracted(Int32)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Span {
+  lo : Int32
+  hi : Int32
+} derive(Eq, @debug.Debug)
+pub fn Span::contains(Self, Int32) -> Bool
+pub fn Span::size(Self) -> Int32
+
+pub(all) enum Verdict {
+  Good
+  Bad
+  Skip
+  Unknown
+} derive(Eq, @debug.Debug)
+pub fn Verdict::constrains(Self) -> Bool
+
+// Type aliases
+
+// Traits

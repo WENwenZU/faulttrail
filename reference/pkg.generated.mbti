@@ -1,0 +1,35 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "WENwenZU/faulttrail/reference"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn compatible_positions(Int32, Array[RefObs]) -> Array[Int32]
+
+pub fn ref_verdict(Int32, Array[RefObs], Int32) -> RefVerdict
+
+pub fn verdict_code_is_conclusive(Int32) -> Bool
+
+// Errors
+
+// Types and methods
+pub(all) struct RefObs {
+  index : Int32
+  verdict : Int32
+  may_retry : Bool
+  mut active : Bool
+} derive(Eq, @debug.Debug)
+
+pub(all) enum RefVerdict {
+  NoBounds(Bool, Bool)
+  Contradiction
+  Unique(Int32)
+  Next(Int32)
+  Stuck(Array[Int32])
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits

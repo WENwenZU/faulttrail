@@ -1,0 +1,9 @@
+import {
+  "WENwenZU/faulttrail/engine",
+  "WENwenZU/faulttrail/session",
+  "WENwenZU/faulttrail/version",
+  "moonbitlang/x/fs",
+  "moonbitlang/core/env",
+}
+
+pkgtype(kind: "executable")

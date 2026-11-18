@@ -1,0 +1,59 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "WENwenZU/faulttrail/session"
+
+import {
+  "WENwenZU/faulttrail/engine",
+  "WENwenZU/faulttrail/version",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub const SEMANTIC_VERSION : Int32 = 1
+
+// Errors
+
+// Types and methods
+pub(all) enum Event {
+  Recorded(@engine.Observation)
+  Retracted(Int32)
+} derive(Eq, @debug.Debug)
+
+pub(all) enum RestoreError {
+  VersionMismatch(Int32, Int32)
+  SequenceMismatch(String)
+  ReplayRejected(Int32, String)
+} derive(Eq, @debug.Debug)
+pub fn RestoreError::message(Self) -> String
+
+pub struct Session {
+  // private fields
+}
+pub fn Session::attempt_limit(Self) -> Int32
+pub fn Session::candidate_span(Self) -> @engine.Span?
+pub fn Session::events(Self) -> Array[Event]
+pub fn Session::is_active(Self, Int32) -> Bool
+pub fn Session::limits(Self) -> @engine.Limits
+pub fn Session::observations(Self) -> Array[@engine.Observation]
+pub fn Session::observe(Self, Int32, @engine.Probe, may_retry? : Bool, note? : String) -> Result[@engine.Observation, @engine.RecordError]
+pub fn Session::observe_commit(Self, String, @engine.Probe, may_retry? : Bool, note? : String) -> Result[@engine.Observation, @engine.RecordError]
+pub fn Session::outcome(Self) -> @engine.Outcome
+pub fn Session::replay(@version.Sequence, Array[Event], limits? : @engine.Limits, attempt_limit? : Int32) -> Result[Self, RestoreError]
+pub fn Session::restore(Snapshot, @version.Sequence) -> Result[Self, RestoreError]
+pub fn Session::retract(Self, Int32) -> Result[Unit, @engine.RetractError]
+pub fn Session::sequence(Self) -> @version.Sequence
+pub fn Session::snapshot(Self) -> Snapshot
+pub fn Session::start(@version.Sequence, limits? : @engine.Limits, attempt_limit? : Int32) -> Result[Self, @engine.InvalidReport]
+
+pub struct Snapshot {
+  // private fields
+} derive(Eq, @debug.Debug)
+pub fn Snapshot::attempt_limit(Self) -> Int32
+pub fn Snapshot::commit_count(Self) -> Int32
+pub fn Snapshot::digest(Self) -> String
+pub fn Snapshot::events(Self) -> Array[Event]
+pub fn Snapshot::limits(Self) -> @engine.Limits
+pub fn Snapshot::semantic_version(Self) -> Int32
+
+// Type aliases
+
+// Traits

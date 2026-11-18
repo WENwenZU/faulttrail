@@ -1,0 +1,13 @@
+// Derived Eq/Debug impls on public enums trigger a toolchain migration notice
+// (implicit_impl_as_method) in 0.10.18; the derived impls are still correct.
+warnings = "-implicit_impl_as_method"
+
+import {
+  "WENwenZU/faulttrail/engine",
+  "WENwenZU/faulttrail/version",
+}
+
+import {
+  "WENwenZU/faulttrail/engine",
+  "WENwenZU/faulttrail/version",
+} for "test"

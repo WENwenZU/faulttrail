@@ -1,0 +1,12 @@
+import {
+  "WENwenZU/faulttrail/engine",
+  "WENwenZU/faulttrail/session",
+  "WENwenZU/faulttrail/sessionfile",
+  "WENwenZU/faulttrail/version",
+  "moonbitlang/core/env",
+  "moonbitlang/x/fs",
+}
+
+pkgtype(kind: "executable")
+
+supported_targets = "js"
