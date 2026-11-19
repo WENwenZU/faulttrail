@@ -1,0 +1,34 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "WENwenZU/faulttrail/gitimport"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn looks_like_commit_id(String) -> Bool
+
+pub fn plan_range(Array[String], String, String, Int32) -> Result[Range, ImportError]
+
+// Errors
+
+// Types and methods
+pub(all) enum ImportError {
+  EmptyChain
+  ToNotTip(String, String)
+  FromNotOnChain(String, String)
+  SingleCommit(String)
+  RangeTooLong(Int32)
+  BadCommitId(String)
+} derive(Eq, @debug.Debug)
+pub fn ImportError::message(Self) -> String
+
+pub(all) struct Range {
+  ids : Array[String]
+  from_id : String
+  to_id : String
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits
