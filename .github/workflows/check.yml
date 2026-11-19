@@ -21,6 +21,15 @@ jobs:
         run: moon version --all
       - name: Update registry
         run: moon update
+      - name: Interfaces are up to date
+        run: |
+          moon info
+          if ! git diff --quiet; then
+            message=$(git diff --stat | tail -6 | tr '\n' ' ' | cut -c1-700)
+            echo "::error title=generated interfaces are stale::$message"
+            git diff --stat
+            exit 1
+          fi
       - name: Check (js)
         run: |
           set +e
