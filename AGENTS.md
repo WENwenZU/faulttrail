@@ -10,6 +10,7 @@
 | `engine/` | 判定引擎：证据分类、边界、候选集合、确定性选点、预算 |
 | `session/` | 会话模型：追加式事件日志、快照、恢复与重放 |
 | `sessionfile/` | 磁盘格式：编码、逐项校验、应用级上限（无 IO） |
+| `gitimport/` | 区间规划：first-parent 列表与起止端点的校验（无 IO、无 Git 调用） |
 | `cmd/faulttrail/` | 命令行：参数、退出码、临时文件 + 替换、陈旧 revision 检测 |
 | `reference/` | 独立的穷举参考模型，只用于对照，不得被产品代码调用 |
 | `crosscheck/` | 白盒对照测试：穷举、随机、场景、预算、重放 |
@@ -73,6 +74,16 @@ attempt 等于 `1 + 活动记录数`、位置合法、`Retracted` 目标存在�
   README、`CLI与会话格式-2026-11-17.md` 与测试。
 - 命令包声明 `supported_targets = "js"`；不要因为核心在 Wasm 通过就宣称 CLI 可在
   Wasm 运行。
+
+## Git 导入
+
+- 只允许 `git rev-parse --verify` 与 `git rev-list --first-parent`；以参数向量调用
+  （`execFileSync`），不经过 shell，仓库路径可以含空格。
+- 只取提交标识与顺序。不得加 `--format` 读取作者、邮箱、提交正文，也不得运行仓库
+  内的钩子、别名或脚本。
+- 端点语义：两端都进入序列（位置 0 与最后一位）；起点必须在终点的 first-parent
+  链上；合并提交按一个位置处理；两端相同直接拒绝。
+- 所有导入失败必须发生在 `create` 之前，不写出会话文件；会话文件不记录仓库路径。
 
 ## 测试要求
 

@@ -90,19 +90,30 @@ moon run --target js cmd/faulttrail -- help
 ## 命令行会话
 
 ```bash
-# 准备 ids.txt，每行一个标识，从 v0 到 v7，按旧到新排列。
-moon run --target js cmd/faulttrail -- start   --sequence ids.txt --session s.session
-moon run --target js cmd/faulttrail -- record  --session s.session --commit v0 --probe passed
-moon run --target js cmd/faulttrail -- record  --session s.session --commit v7 --probe failed
+# 方式一：显式提交列表，每行一个标识，从旧到新排列。
+moon run --target js cmd/faulttrail -- start --sequence ids.txt --session s.session
+
+# 方式二：从本地 Git 仓库只读导入一段 first-parent 区间（两端都包含）。
+# start 会打印两个端点的完整标识，可直接用于下面的 record。
+moon run --target js cmd/faulttrail -- start \
+  --repo ../some-repo --from v0 --to v7 --session s.session
+
+# 记录端点、查询建议、跳过、撤销、查看、重放
+moon run --target js cmd/faulttrail -- record  --session s.session --commit <start-id> --probe passed
+moon run --target js cmd/faulttrail -- record  --session s.session --commit <end-id>   --probe failed
 moon run --target js cmd/faulttrail -- next    --session s.session
-moon run --target js cmd/faulttrail -- record  --session s.session --commit v3 --probe skipped
+moon run --target js cmd/faulttrail -- record  --session s.session --commit <id> --probe skipped
 moon run --target js cmd/faulttrail -- retract --session s.session --observation 2
 moon run --target js cmd/faulttrail -- explain --session s.session
 moon run --target js cmd/faulttrail -- replay  --session s.session
 ```
 
 - 提交列表由用户显式给出，一行一个，从旧到新；空行与 `#` 注释被忽略。
-- 命令不读 Git 仓库、不运行测试；`build-failed` 等只记录，不约束边界。
+- Git 导入只读取提交标识与顺序：`--from` 必须位于 `--to` 的 first-parent 链上，
+  两端都进入序列（位置 0 与最后一位）；合并提交按一个位置处理，因此结果可能落在
+  合并提交上。不读作者、邮箱、提交正文，不运行仓库脚本或测试。
+- 区间超长、端点不在主线上、版本无法解析或仓库不可读时直接报错，不创建会话文件。
+- 命令不运行测试；`build-failed` 等只记录，不约束边界。
 - 会话文件按行存序列、摘要、重试策略、预算与完整事件；格式版本与语义版本不匹配
   一律拒绝，不做静默迁移。
 - 保存先写同目录的独占临时文件（唯一名 + `wx`）再替换；失败保留原文件，且不会
