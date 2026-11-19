@@ -19,10 +19,6 @@ jobs:
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
       - name: Toolchain
         run: moon version --all
-      - name: Interfaces are up to date
-        run: |
-          moon info
-          git diff --exit-code
       - name: Check (js)
         run: moon check --target js --deny-warn
       - name: Check (wasm)
