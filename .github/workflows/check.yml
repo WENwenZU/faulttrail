@@ -11,12 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up MoonBit
-        uses: hustcer/setup-moonbit@v1
-        with:
-          version: 0.10.18+6c83a7f62
+      - name: Install MoonBit
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MOONBIT_INSTALL_VERSION: 0.10.18+6c83a7f62
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Toolchain
+        run: moon version --all
       - name: Interfaces are up to date
         run: |
           moon info
