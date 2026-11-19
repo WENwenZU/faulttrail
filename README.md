@@ -123,6 +123,7 @@ moon run --target js cmd/faulttrail -- record  --session s.session --commit <id>
 moon run --target js cmd/faulttrail -- retract --session s.session --observation 2
 moon run --target js cmd/faulttrail -- explain --session s.session
 moon run --target js cmd/faulttrail -- replay  --session s.session
+moon run --target js cmd/faulttrail -- export  --session s.session --out report.md
 ```
 
 - 提交列表由用户显式给出，一行一个，从旧到新；空行与 `#` 注释被忽略。
@@ -140,6 +141,8 @@ moon run --target js cmd/faulttrail -- replay  --session s.session
   `explain` 只读成功即 0，状态判断用 `next`。
 - `next --json` 输出单行 JSON：`outcome`、`candidates`、`next`、`blocked`、
   冲突的两条记录或预算字段；退出码与文本模式一致，便于脚本读取。
+- `export` 生成可分享的脱敏报告：序列、证据表、结果与重放状态，不含会话路径、
+  仓库路径或备注。
 - 命令包声明 `supported_targets = "js"`：磁盘行为只在 JS 后端验证，Wasm 只覆盖核心。
 
 ## 用法

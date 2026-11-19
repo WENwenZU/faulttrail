@@ -58,6 +58,7 @@ fn usage() -> Unit {
   println("  faulttrail next    --session <session-file>")
   println("  faulttrail explain --session <session-file>")
   println("  faulttrail replay  --session <session-file>")
+  println("  faulttrail export  --session <session-file> [--out <report.md>]")
   println("  faulttrail help")
   println("")
   println("The ids file lists commit identifiers oldest first, one per line;")
@@ -643,6 +644,73 @@ fn cmd_replay(args : Array[String]) -> Int32 {
 }
 
 ///|
+fn cmd_export(args : Array[String]) -> Int32 {
+  let parsed = match parse_options(args, ["session", "out"], []) {
+    Err(error) => {
+      println("error: \{error}")
+      return EXIT_USAGE
+    }
+    Ok(parsed) => parsed
+  }
+  let session_path = match required(parsed, "session") {
+    Err(error) => {
+      println("error: \{error}")
+      return EXIT_USAGE
+    }
+    Ok(value) => value
+  }
+  let file = match load(session_path) {
+    Err(error) => {
+      println("error: \{error}")
+      return EXIT_INPUT
+    }
+    Ok(file) => file
+  }
+  let text = render_report(file)
+  match parsed.values.get("out") {
+    None => {
+      print_text(text)
+      EXIT_OK
+    }
+    Some(path) =>
+      match write_report(path, text) {
+        Err(error) => {
+          println("error: \{error}")
+          EXIT_INPUT
+        }
+        Ok(_) => {
+          println("report: \{path}")
+          EXIT_OK
+        }
+      }
+  }
+}
+
+///|
+/// Print text without doubling the trailing newline that `println` adds.
+fn print_text(text : String) -> Unit {
+  match text.rev_find("\n") {
+    Some(index) =>
+      if index == text.length() - 1 {
+        println(text[:index].to_owned())
+      } else {
+        println(text)
+      }
+    None => println(text)
+  }
+}
+
+///|
+fn write_report(path : String, text : String) -> Result[Unit, String] {
+  try {
+    @fs.write_string_to_file(path, text)
+    Ok(())
+  } catch {
+    _ => Err("cannot write \{path}")
+  }
+}
+
+///|
 fn dispatch(command : String, args : Array[String]) -> Int32 {
   match command {
     "start" => cmd_start(args)
@@ -651,6 +719,7 @@ fn dispatch(command : String, args : Array[String]) -> Int32 {
     "next" => cmd_next(args)
     "explain" => cmd_explain(args)
     "replay" => cmd_replay(args)
+    "export" => cmd_export(args)
     "help" | "--help" | "-h" => {
       usage()
       EXIT_OK
