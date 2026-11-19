@@ -1,5 +1,6 @@
 import {
   "WENwenZU/faulttrail/engine",
+  "WENwenZU/faulttrail/gitimport",
   "WENwenZU/faulttrail/session",
   "WENwenZU/faulttrail/sessionfile",
   "WENwenZU/faulttrail/version",

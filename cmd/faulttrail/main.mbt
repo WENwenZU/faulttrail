@@ -206,7 +206,10 @@ fn cmd_start(args : Array[String]) -> Int32 {
   let parsed = match
     parse_options(
       args,
-      ["sequence", "session", "attempt-limit", "max-observations", "max-steps"],
+      [
+        "sequence", "session", "attempt-limit", "max-observations", "max-steps",
+        "repo", "from", "to",
+      ],
       [],
     ) {
     Err(error) => {
@@ -214,13 +217,6 @@ fn cmd_start(args : Array[String]) -> Int32 {
       return EXIT_USAGE
     }
     Ok(parsed) => parsed
-  }
-  let sequence_path = match required(parsed, "sequence") {
-    Err(error) => {
-      println("error: \{error}")
-      return EXIT_USAGE
-    }
-    Ok(value) => value
   }
   let session_path = match required(parsed, "session") {
     Err(error) => {
@@ -273,12 +269,78 @@ fn cmd_start(args : Array[String]) -> Int32 {
     )
     return EXIT_USAGE
   }
-  let ids = match read_ids(sequence_path) {
-    Err(error) => {
-      println("error: \{error}")
-      return EXIT_INPUT
+  // One source per investigation: an explicit commit list, or a read-only Git
+  // first-parent import. Mixing them would make the file's provenance ambiguous.
+  let sequence_path = parsed.values.get("sequence")
+  let from_repo = parsed.values.get("repo")
+  let from_rev = parsed.values.get("from")
+  let to_rev = parsed.values.get("to")
+  let git_mode = from_repo is Some(_) ||
+    from_rev is Some(_) ||
+    to_rev is Some(_)
+  if sequence_path is Some(_) && git_mode {
+    println("error: use either --sequence or --repo/--from/--to, not both")
+    return EXIT_USAGE
+  }
+  if sequence_path is None && !git_mode {
+    println("error: missing --sequence, or --repo with --from and --to")
+    return EXIT_USAGE
+  }
+  let ids : Array[String] = if git_mode {
+    let repo = match required(parsed, "repo") {
+      Err(error) => {
+        println("error: \{error}")
+        return EXIT_USAGE
+      }
+      Ok(value) => value
     }
-    Ok(ids) => ids
+    let from = match required(parsed, "from") {
+      Err(error) => {
+        println("error: \{error}")
+        return EXIT_USAGE
+      }
+      Ok(value) => value
+    }
+    let to = match required(parsed, "to") {
+      Err(error) => {
+        println("error: \{error}")
+        return EXIT_USAGE
+      }
+      Ok(value) => value
+    }
+    match import_range(repo, from, to, @sessionfile.MAX_SEQUENCE) {
+      Err(error) => {
+        println("error: \{error}")
+        return EXIT_INPUT
+      }
+      Ok(range) => {
+        let last = range.ids.length() - 1
+        println(
+          "imported: \{range.ids.length()} first-parent commits (\{short(range.from_id)}..\{short(range.to_id)})",
+        )
+        println("from: \{range.from_id} (position 0)")
+        println("to:   \{range.to_id} (position \{last})")
+        println(
+          "hint: faulttrail record --session \{session_path} --commit \{range.from_id} --probe passed",
+        )
+        println(
+          "hint: faulttrail record --session \{session_path} --commit \{range.to_id} --probe failed",
+        )
+        range.ids
+      }
+    }
+  } else {
+    let path = match sequence_path {
+      Some(path) => path
+      None => ""
+    }
+    match read_ids(path) {
+      Err(error) => {
+        println("error: \{error}")
+        return EXIT_INPUT
+      }
+      Ok(ids) => ids
+    }
   }
   let sequence = match
     @version.Sequence::from_ids(ids, max_commits=@sessionfile.MAX_SEQUENCE) {
