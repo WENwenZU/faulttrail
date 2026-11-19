@@ -526,7 +526,7 @@ fn cmd_retract(args : Array[String]) -> Int32 {
 
 ///|
 fn cmd_next(args : Array[String]) -> Int32 {
-  let parsed = match parse_options(args, ["session"], []) {
+  let parsed = match parse_options(args, ["session"], ["json"]) {
     Err(error) => {
       println("error: \{error}")
       return EXIT_USAGE
@@ -548,7 +548,15 @@ fn cmd_next(args : Array[String]) -> Int32 {
     Ok(file) => file
   }
   let outcome = file.session.outcome()
-  print_outcome(outcome)
+  let as_json = match parsed.flags.get("json") {
+    Some(_) => true
+    None => false
+  }
+  if as_json {
+    println(outcome_json(outcome))
+  } else {
+    print_outcome(outcome)
+  }
   outcome_exit(outcome)
 }
 

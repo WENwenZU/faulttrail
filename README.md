@@ -138,6 +138,8 @@ moon run --target js cmd/faulttrail -- replay  --session s.session
   不是并发锁；同会话多进程同时写入仍可能丢记录，本轮不支持并发合并。
 - 退出码：0 完成、1 输入/IO、2 用法、3 信息不足、4 歧义、5 冲突、6 预算耗尽。
   `explain` 只读成功即 0，状态判断用 `next`。
+- `next --json` 输出单行 JSON：`outcome`、`candidates`、`next`、`blocked`、
+  冲突的两条记录或预算字段；退出码与文本模式一致，便于脚本读取。
 - 命令包声明 `supported_targets = "js"`：磁盘行为只在 JS 后端验证，Wasm 只覆盖核心。
 
 ## 用法
