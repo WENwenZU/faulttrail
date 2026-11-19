@@ -130,6 +130,7 @@ moon run --target js cmd/faulttrail -- export  --session s.session --out report.
 ```
 
 - 提交列表由用户显式给出，一行一个，从旧到新；空行与 `#` 注释被忽略。
+- `record --commit` 接受完整标识或**唯一前缀**；前缀命中多个提交时报错，不会猜。
 - Git 导入只读取提交标识与顺序：`--from` 必须位于 `--to` 的 first-parent 链上，
   两端都进入序列（位置 0 与最后一位）；合并提交按一个位置处理，因此结果可能落在
   合并提交上。不读作者、邮箱、提交正文，不运行仓库脚本或测试。
