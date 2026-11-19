@@ -1,0 +1,35 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up MoonBit
+        uses: hustcer/setup-moonbit@v1
+        with:
+          version: 0.1.20261028
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Interfaces are up to date
+        run: |
+          moon info
+          git diff --exit-code
+      - name: Check (js)
+        run: moon check --target js --deny-warn
+      - name: Check (wasm)
+        run: moon check --target wasm --deny-warn
+      - name: Test (js)
+        run: moon test --target js
+      - name: Test (wasm)
+        run: moon test --target wasm
+      - name: First-parent fixture example
+        run: moon run --target js examples/first_parent
+      - name: Git import example
+        run: moon run --target js examples/git_import

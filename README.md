@@ -104,6 +104,9 @@ moon run --target js examples/git_import
 不需要预先准备仓库；合成身份只写在该临时仓库的本地配置里，仓库输出目录已被
 `.gitignore` 忽略。
 
+仓库还带一个 GitHub Actions 工作流（`.github/workflows/check.yml`）：在两个后端跑
+严格检查与测试，并运行上面两个示例。它需要在 GitHub 上运行一次才算验证过。
+
 ## 命令行会话
 
 ```bash
