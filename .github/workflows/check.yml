@@ -14,7 +14,7 @@ jobs:
       - name: Set up MoonBit
         uses: hustcer/setup-moonbit@v1
         with:
-          version: 0.1.20261028+e1e1f15
+          version: 0.10.18+6c83a7f62
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Interfaces are up to date
