@@ -76,7 +76,7 @@ v0 … v(k-1) 正常        vk … v(n-1) 异常        0 ≤ k ≤ n-1
 ## 快速开始
 
 ```bash
-# 发布到 Mooncakes 之后（当前尚未发布）：
+# 从 Mooncakes 安装（0.1.0 起）：
 #   moon add WENwenZU/faulttrail@0.1.0
 # 从源码运行需要 MoonBit 工具链（本仓库验证于 moon 0.1.20261028 / moonc 0.10.18）
 moon check --target js
