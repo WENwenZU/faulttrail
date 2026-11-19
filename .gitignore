@@ -4,6 +4,7 @@ _build/
 .moon-lock
 *.log
 _tmp_store_test/
+examples/git_import/out/
 # Local investigations and interrupted writes are not release assets.
 *.session
 *.tmp.*

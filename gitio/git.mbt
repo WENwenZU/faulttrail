@@ -88,22 +88,48 @@ fn first_line(text : String) -> String {
 }
 
 ///|
-fn run_git(repo : String, args : FixedArray[String]) -> Result[String, String] {
-  let full = FixedArray::make(3 + args.length(), "")
+fn full_args(repo : String, tail : FixedArray[String]) -> FixedArray[String] {
+  let full = FixedArray::make(3 + tail.length(), "")
   full[0] = "-C"
   full[1] = repo
   full[2] = "--no-pager"
   let mut i = 0
-  while i < args.length() {
-    full[3 + i] = args[i]
+  while i < tail.length() {
+    full[3 + i] = tail[i]
     i = i + 1
   }
-  let result = exec_checked(exec_file_sync, "git", full, git_options())
+  full
+}
+
+///|
+fn exec_git(args : FixedArray[String]) -> Result[String, String] {
+  let result = exec_checked(exec_file_sync, "git", args, git_options())
   if result.ok() {
     Ok(result.stdout())
   } else {
     Err(first_line(result.stderr()))
   }
+}
+
+///|
+fn run_git(repo : String, tail : FixedArray[String]) -> Result[String, String] {
+  exec_git(full_args(repo, tail))
+}
+
+///|
+/// Run `git` with a complete argument vector.
+///
+/// Exposed so an example or a host can build a fixture repository; the command
+/// line tool itself only uses the read-only helpers above. Arguments are passed
+/// as a vector, never through a shell.
+pub fn run_args(args : Array[String]) -> Result[String, String] {
+  let fixed = FixedArray::make(args.length(), "")
+  let mut i = 0
+  while i < args.length() {
+    fixed[i] = args[i]
+    i = i + 1
+  }
+  exec_git(fixed)
 }
 
 ///|

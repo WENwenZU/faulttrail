@@ -4,9 +4,12 @@
 显式证据推断"首次异常位置"的候选集合，并给出下一步建议；状态可保存、可重放。**
 
 核心三个包（`version` / `engine` / `session`）不含文件 IO、不调用进程、不读取 Git
-仓库、不执行测试命令。人工 CLI 负责会话文件读写，`examples/first_parent` 读取一份
-已经导出的合成 `git log` 文本。版本访问由调用方完成，只要求它提供按顺序排列、
-互不相同的提交标识。
+仓库、不执行测试命令；它们接收调用方给出的、按顺序排列且互不相同的提交标识。
+
+真正读 Git 的是命令行：`start --repo ... --from ... --to ...` 会用只读的
+`git rev-parse` / `git rev-list --first-parent` 取一段主线区间，再把标识交给核心。
+也可以跳过 Git，用 `--sequence` 直接给列表。两种方式都只做人工判定，不执行目标
+项目的测试命令。
 
 ## 为什么不是 `git bisect` 的包装
 
@@ -86,6 +89,20 @@ moon run --target js cmd/faulttrail -- help
 `examples/first_parent` 读取一份真实的 `git log --first-parent --reverse
 --format="%H %s"` 输出（合成仓库，8 个 first-parent 提交，含一个合并提交），
 把顺序交给核心，走一遍调查并逐项自检。
+
+## 公开复现
+
+```bash
+moon run --target js examples/git_import
+```
+
+它在 `examples/git_import/out/` 里现场创建一个合成仓库（9 个提交，其中 8 个在主线，
+`v4` 是合并提交，另有 1 个旁支提交），导入 `main~7..main`，然后跑完端点记录、建议、
+撤销、重记与重放，并检查缺失仓库、旁支起点、反序区间、单提交区间和含空格的路径。
+输出为 PASS/FAIL 清单，全部通过时退出 0。
+
+不需要预先准备仓库；合成身份只写在该临时仓库的本地配置里，仓库输出目录已被
+`.gitignore` 忽略。
 
 ## 命令行会话
 
