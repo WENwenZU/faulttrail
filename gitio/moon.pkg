@@ -1,0 +1,8 @@
+// The git runner talks to a real process and is only used by the JS backend.
+warnings = "-implicit_impl_as_method"
+
+import {
+  "WENwenZU/faulttrail/gitimport",
+}
+
+supported_targets = "js"

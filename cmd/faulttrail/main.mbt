@@ -145,6 +145,16 @@ fn optional_int(
 }
 
 ///|
+/// Short form used only in command output; the session keeps full identifiers.
+fn short(id : String) -> String {
+  if id.length() <= 12 {
+    id
+  } else {
+    id[:12].to_owned()
+  }
+}
+
+///|
 fn strip_trailing_cr(text : String) -> String {
   match text.rev_find("\r") {
     Some(index) =>
@@ -308,7 +318,7 @@ fn cmd_start(args : Array[String]) -> Int32 {
       }
       Ok(value) => value
     }
-    match import_range(repo, from, to, @sessionfile.MAX_SEQUENCE) {
+    match @gitio.import_range(repo, from, to, @sessionfile.MAX_SEQUENCE) {
       Err(error) => {
         println("error: \{error}")
         return EXIT_INPUT

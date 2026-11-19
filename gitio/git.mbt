@@ -118,15 +118,6 @@ fn trim_line(text : String) -> String {
 }
 
 ///|
-fn short(id : String) -> String {
-  if id.length() <= 12 {
-    id
-  } else {
-    id[:12].to_owned()
-  }
-}
-
-///|
 /// A revision is a value, never an option: empty and `-`-prefixed inputs are
 /// rejected before any process is started.
 fn revision_error(revision : String) -> String? {
