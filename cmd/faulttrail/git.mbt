@@ -127,25 +127,35 @@ fn short(id : String) -> String {
 }
 
 ///|
-/// Resolve a user-supplied revision (branch, tag, short or full hash) to the
-/// full commit identifier. Revisions starting with `-` are refused so a value can
-/// never be read as an option.
-pub fn resolve_commit(
-  repo : String,
+/// A revision is a value, never an option: empty and `-`-prefixed inputs are
+/// rejected before any process is started.
+fn revision_error(revision : String) -> String? {
+  if revision.length() == 0 {
+    Some("empty revision")
+  } else if revision.get_char(0) == Some('-') {
+    Some("revisions starting with '-' are not accepted")
+  } else {
+    None
+  }
+}
+
+///|
+/// Resolve a revision through an injected runner. Split from `resolve_commit`
+/// so the argument vector can be tested without a repository or a git binary.
+fn resolve_with(
+  run : (FixedArray[String]) -> Result[String, String],
   revision : String,
 ) -> Result[String, String] {
-  if revision.length() == 0 {
-    return Err("empty revision")
-  }
-  if revision.get_char(0) == Some('-') {
-    return Err("revisions starting with '-' are not accepted")
+  match revision_error(revision) {
+    Some(error) => return Err(error)
+    None => ()
   }
   let args = FixedArray::make(4, "")
   args[0] = "rev-parse"
   args[1] = "--verify"
   args[2] = "--end-of-options"
   args[3] = "\{revision}^{commit}"
-  match run_git(repo, args) {
+  match run(args) {
     Err(detail) => Err("cannot resolve '\{revision}': \{detail}")
     Ok(text) => {
       let id = trim_line(text)
@@ -159,10 +169,21 @@ pub fn resolve_commit(
 }
 
 ///|
+/// Resolve a user-supplied revision (branch, tag, short or full hash) to the
+/// full commit identifier. Revisions starting with `-` are refused so a value can
+/// never be read as an option.
+pub fn resolve_commit(
+  repo : String,
+  revision : String,
+) -> Result[String, String] {
+  resolve_with(args => run_git(repo, args), revision)
+}
+
+///|
 /// Newest-first first-parent chain of `to`, bounded to `limit` entries so a huge
 /// repository cannot produce an unbounded read.
-pub fn first_parent_chain(
-  repo : String,
+fn chain_with(
+  run : (FixedArray[String]) -> Result[String, String],
   to : String,
   limit : Int32,
 ) -> Result[Array[String], String] {
@@ -171,7 +192,7 @@ pub fn first_parent_chain(
   args[1] = "--first-parent"
   args[2] = "--max-count=\{limit}"
   args[3] = to
-  match run_git(repo, args) {
+  match run(args) {
     Err(detail) => Err("cannot list first-parent history: \{detail}")
     Ok(text) => {
       let ids : Array[String] = []
@@ -187,6 +208,50 @@ pub fn first_parent_chain(
 }
 
 ///|
+pub fn first_parent_chain(
+  repo : String,
+  to : String,
+  limit : Int32,
+) -> Result[Array[String], String] {
+  chain_with(args => run_git(repo, args), to, limit)
+}
+
+///|
+/// Import an inclusive first-parent range through an injected runner. Exposed for
+/// tests, which assert the argument vector without a git binary.
+pub fn import_with(
+  run : (FixedArray[String]) -> Result[String, String],
+  from : String,
+  to : String,
+  max : Int32,
+) -> Result[@gitimport.Range, String] {
+  match revision_error(to) {
+    Some(error) => return Err("--to: \{error}")
+    None => ()
+  }
+  match revision_error(from) {
+    Some(error) => return Err("--from: \{error}")
+    None => ()
+  }
+  let to_hash = match resolve_with(run, to) {
+    Err(detail) => return Err("--to: \{detail}")
+    Ok(id) => id
+  }
+  let from_hash = match resolve_with(run, from) {
+    Err(detail) => return Err("--from: \{detail}")
+    Ok(id) => id
+  }
+  let chain = match chain_with(run, to_hash, max + 1) {
+    Err(detail) => return Err(detail)
+    Ok(chain) => chain
+  }
+  match @gitimport.plan_range(chain, from_hash, to_hash, max) {
+    Err(error) => Err(error.message())
+    Ok(range) => Ok(range)
+  }
+}
+
+///|
 /// Import an inclusive first-parent range. The result is validated by
 /// `gitimport` before any session is created.
 pub fn import_range(
@@ -195,20 +260,5 @@ pub fn import_range(
   to : String,
   max : Int32,
 ) -> Result[@gitimport.Range, String] {
-  let to_hash = match resolve_commit(repo, to) {
-    Err(detail) => return Err("--to: \{detail}")
-    Ok(id) => id
-  }
-  let from_hash = match resolve_commit(repo, from) {
-    Err(detail) => return Err("--from: \{detail}")
-    Ok(id) => id
-  }
-  let chain = match first_parent_chain(repo, to_hash, max + 1) {
-    Err(detail) => return Err(detail)
-    Ok(chain) => chain
-  }
-  match @gitimport.plan_range(chain, from_hash, to_hash, max) {
-    Err(error) => Err(error.message())
-    Ok(range) => Ok(range)
-  }
+  import_with(args => run_git(repo, args), from, to, max)
 }
