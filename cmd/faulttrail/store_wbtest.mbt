@@ -8,6 +8,10 @@
 extern "js" fn chmod_sync(path : String, mode : Int32) -> Unit = "chmodSync"
 
 ///|
+extern "js" fn platform_name() -> String =
+  #| () => globalThis.process.platform
+
+///|
 fn scratch_dir() -> String {
   "_tmp_store_test"
 }
@@ -81,6 +85,13 @@ test "a stale revision is refused instead of overwriting the file" {
 /// A read-only destination makes the rename fail on this platform; the previous
 /// session must stay intact and our temporary file must be removed.
 test "a failed replace leaves the previous session readable" {
+  // A read-only destination blocks the rename on Windows (EPERM) but not on
+  // POSIX, where the directory permission decides. The case is meaningful only
+  // where the platform enforces it.
+  if platform_name() != "win32" {
+    println("skip: read-only target does not block rename on this platform")
+    return
+  }
   prepare()
   let path = "\{scratch_dir()}/blocked.session"
   cleanup(path)
