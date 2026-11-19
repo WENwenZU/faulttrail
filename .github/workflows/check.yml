@@ -20,7 +20,16 @@ jobs:
       - name: Toolchain
         run: moon version --all
       - name: Check (js)
-        run: moon check --target js --deny-warn
+        run: |
+          set +e
+          moon check --target js --deny-warn > check.log 2>&1
+          code=$?
+          if [ $code -ne 0 ]; then
+            message=$(tail -12 check.log | tr '\n' ' ' | cut -c1-700)
+            echo "::error title=moon check (js) failed::$message"
+            cat check.log
+            exit $code
+          fi
       - name: Check (wasm)
         run: moon check --target wasm --deny-warn
       - name: Test (js)
